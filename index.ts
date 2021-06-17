@@ -45,15 +45,15 @@ async function handler(request: Request) {
   // Type 2 in a request is an ApplicationCommand interaction.
   // It implies that a user has issued a command.
   if (type === 2) {
-    const { replayid } = data.options.find(
-      (option: any) => option.name === "replayid"
+    const replayOpt = data.options?.find(
+      (option: any) => option.name === "replay"
     );
     return json({
       // Type 4 reponds with the below message retaining the user's
       // input at the top.
       type: 4,
       data: {
-        content: `Hello, ${replayid}!`,
+        content: `Hello, ${replayOpt?.value}!`,
       },
     });
   }
