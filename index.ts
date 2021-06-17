@@ -36,15 +36,14 @@ async function handler(request: Request) {
   const { type = 0, data = { options: [] } } = JSON.parse(body);
   // Discord performs Ping interactions to test our application.
   // Type 1 in a request implies a Ping interaction.
-  if (type === 1) {
-    return json({
-      type: 1, // Type 1 in a response is a Pong interaction response type.
-    });
-  }
+  if (type === 1)
+    // Type 1 in a response is a Pong interaction response type.
+    return json({ type: 1 });
 
   // Type 2 in a request is an ApplicationCommand interaction.
   // It implies that a user has issued a command.
   if (type === 2) {
+    console.log(data);
     const replayOpt = data.options?.find(
       (option: any) => option.name === "replay"
     );
