@@ -14,7 +14,16 @@ const optionArrayToObject = <
   return optMap;
 };
 
-export const handleSummary = ({
+type Row = {
+  player: string;
+  change: number;
+  best: number;
+  worst: number;
+  mode: string;
+  rounds: number;
+};
+
+export const handleSummary = async ({
   options,
 }: {
   id: "855090407675265054";
@@ -24,7 +33,7 @@ export const handleSummary = ({
     | { name: "period"; type: 3; value: string }
     | { name: "mode"; type: 3; value: string }
   )[];
-}): Response => {
+}): Promise<Response> => {
   const opts = optionArrayToObject(options ?? []);
 
   const duration =
@@ -39,11 +48,58 @@ export const handleSummary = ({
                 Date.now() / 1000 - duration
               })`
             : ""
-        }ORDER BY replayid DESC ${!duration ? ` LIMIT 1` : ""})`;
+        } ORDER BY replayid DESC ${!duration ? ` LIMIT 1` : ""})`;
 
-  const query = `SELECT player, SUM(\`change\`) \`change\`, MAX(\`change\`) best, MIN(\`change\`) worst, \`mode\`, COUNT(1) rounds FROM elo.outcome WHERE replayid IN ${replay}${
-    opts.mode ? ` AND \`mode\` = ${opts.mode}` : ""
+  const query = `SELECT player, SUM(\`change\`) \`change\`, MAX(\`change\`) best, MIN(\`change\`) worst, mode, COUNT(1) rounds FROM elo.outcome WHERE replayid IN ${replay}${
+    opts.mode ? ` AND mode = ${opts.mode}` : ""
   } GROUP BY player ORDER BY 2 DESC;`;
 
-  return json({ type: 4, data: { content: query } });
+  const result: Row[] = await fetch("https://w3x.io/sql", {
+    headers: {
+      "x-dbproxy-user": "elopublic",
+      "x-dbproxy-password": Deno.env.get("SQL_PASSWORD")!,
+      "x-dbproxy-database": "elo",
+    },
+    method: "POST",
+    body: query,
+  }).then((r) => r.json());
+
+  if (result.length === 0)
+    return json({ type: 4, data: { content: "no rounds found" } });
+
+  const groups = result.reduce((groups, row) => {
+    const group = groups[row.mode] ?? (groups[row.mode] = []);
+    group.push(row);
+
+    return groups;
+  }, {} as Record<string, Row[]>);
+
+  const content = Object.values(groups)
+    .map((rows) => {
+      rows = rows.map((r) => ({ ...r, player: r.player.split("#")[0] }));
+
+      const maxNameLength = rows.reduce(
+        (max, r) => (max > r.player.length ? max : r.player.length),
+        6
+      );
+
+      return `changes in ${rows[0].mode}:
+\`\`\`
+${"Player".padStart(maxNameLength)} Change  Best Worst Rounds
+${rows
+  .map((r) =>
+    [
+      r.player.padStart(maxNameLength),
+      r.change.toFixed(1).padStart(6),
+      r.best.toFixed(1).padStart(5),
+      r.worst.toFixed(1).padStart(5),
+      r.rounds.toString().padStart(6),
+    ].join(" ")
+  )
+  .join("\n")}
+\`\`\``;
+    })
+    .join("\n");
+
+  return json({ type: 4, data: { content } });
 };
