@@ -39,8 +39,9 @@ export const handleSummary = async ({
 }): Promise<Response> => {
   const opts = optionArrayToObject(options ?? []);
 
-  const duration =
+  let duration =
     typeof opts.period === "string" ? parseDuration(opts.period) : undefined;
+  duration = duration ? Math.min(duration, 604800) : 0;
 
   const mode = typeof opts.mode === "string" ? parseMode(opts.mode) : undefined;
 
@@ -67,7 +68,7 @@ INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
     mode ? `\nWHERE mode = '${mode}'` : ""
   }
 GROUP BY player
-ORDER BY 5 DESC, 2 DESC;`;
+ORDER BY 5 ASC, 2 DESC;`;
 
   const result: Row[] = await fetch("https://w3x.io/sql", {
     headers: {
