@@ -54,6 +54,8 @@ export const handleSummary = async ({
     opts.mode ? ` AND mode = ${opts.mode}` : ""
   } GROUP BY player ORDER BY 2 DESC;`;
 
+  console.log(query);
+
   const result: Row[] = await fetch("https://w3x.io/sql", {
     headers: {
       "x-dbproxy-user": "elopublic",
@@ -66,6 +68,8 @@ export const handleSummary = async ({
 
   if (result.length === 0)
     return json({ type: 4, data: { content: "no rounds found" } });
+
+  console.log(result);
 
   const groups = result.reduce((groups, row) => {
     const group = groups[row.mode] ?? (groups[row.mode] = []);
