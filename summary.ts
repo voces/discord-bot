@@ -62,9 +62,7 @@ INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
     opts.mode ? `\nWHERE mode = ${opts.mode}` : ""
   }
 GROUP BY player
-ORDER BY 2 DESC;`;
-
-  console.log(query);
+ORDER BY 5 DESC, 2 DESC;`;
 
   const result: Row[] = await fetch("https://w3x.io/sql", {
     headers: {
@@ -78,8 +76,6 @@ ORDER BY 2 DESC;`;
 
   if (result.length === 0)
     return json({ type: 4, data: { content: "no rounds found" } });
-
-  console.log(result);
 
   const groups = result.reduce((groups, row) => {
     const group = groups[row.mode] ?? (groups[row.mode] = []);
