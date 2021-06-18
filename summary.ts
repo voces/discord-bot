@@ -41,18 +41,27 @@ export const handleSummary = async ({
 
   const replay =
     typeof opts.replay === "number"
-      ? opts.replay
-      : `(SELECT replayid FROM elo.replay${
+      ? `SELECT ${opts.replay} replayid`
+      : `SELECT replayid FROM elo.replay${
           duration
             ? ` WHERE playedon >= FROM_UNIXTIME(${
                 Date.now() / 1000 - duration
               })`
             : ""
-        } ORDER BY replayid DESC ${!duration ? ` LIMIT 1` : ""})`;
+        } ORDER BY replayid DESC ${!duration ? ` LIMIT 1` : ""}`;
 
-  const query = `SELECT player, SUM(\`change\`) \`change\`, MAX(\`change\`) best, MIN(\`change\`) worst, mode, COUNT(1) rounds FROM elo.outcome WHERE replayid IN ${replay}${
-    opts.mode ? ` AND mode = ${opts.mode}` : ""
-  } GROUP BY player ORDER BY 2 DESC;`;
+  const query = `SELECT
+    player,
+    SUM(\`change\`) \`change\`,
+    MAX(\`change\`) best,
+    MIN(\`change\`) worst,
+    mode,
+    COUNT(1) rounds
+FROM elo.outcome
+INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid
+WHERE replayid IN ${replay}${opts.mode ? ` AND mode = ${opts.mode}` : ""}
+GROUP BY player
+ORDER BY 2 DESC;`;
 
   console.log(query);
 
