@@ -33,11 +33,9 @@ export const handleSummary = ({
   const replay =
     typeof opts.replay === "number"
       ? opts.replay
-      : `(SELECT replayid FROM replay ORDER BY replayid DESC ${
-          duration
-            ? `WHERE playedon >= ${Date.now() / 1000 - duration}`
-            : `LIMIT 1`
-        })`;
+      : `(SELECT replayid FROM elo.replay ${
+          duration ? `WHERE playedon >= ${Date.now() / 1000 - duration}` : ""
+        } ORDER BY replayid DESC ${!duration ? `LIMIT 1` : ""})`;
 
   console.log({ duration, replay });
   return json({ type: 4, data: { content: "Boo" } });
