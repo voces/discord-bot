@@ -58,17 +58,17 @@ export const handleSummary = async ({
 
   const query = `SELECT
     player,
+    mode,
     SUM(\`change\`) \`change\`,
     MAX(\`change\`) best,
     MIN(\`change\`) worst,
-    mode,
     COUNT(1) rounds
 FROM elo.outcome
 INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
     mode ? `\nWHERE mode = '${mode}'` : ""
   }
-GROUP BY player
-ORDER BY 5 ASC, 2 DESC;`;
+GROUP BY player, mode
+ORDER BY 2 ASC, 3 DESC;`;
 
   console.log(query);
 
