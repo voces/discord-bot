@@ -45,6 +45,5 @@ export const handleSummary = ({
     opts.mode ? ` AND \`mode\` = ${opts.mode}` : ""
   } GROUP BY player ORDER BY 2 DESC;`;
 
-  console.log({ duration, replay, query });
-  return json({ type: 4, data: { content: "Boo" } });
+  return json({ type: 4, data: { content: query } });
 };
