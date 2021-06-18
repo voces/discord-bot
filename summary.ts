@@ -91,7 +91,7 @@ ORDER BY 5 ASC, 2 DESC;`;
   }, {} as Record<string, Row[]>);
 
   const content = Object.values(groups)
-    .map((rows) => {
+    .map((rows, i) => {
       rows = rows.map((r) => ({ ...r, player: r.player.split("#")[0] }));
 
       const maxNameLength = rows.reduce(
@@ -99,7 +99,7 @@ ORDER BY 5 ASC, 2 DESC;`;
         6
       );
 
-      return `changes in ${rows[0].mode}:
+      return `Changes in ${rows[0].mode}:
 \`\`\`
 ${"Player".padStart(maxNameLength)} Change  Best Worst Rounds
 ${rows
