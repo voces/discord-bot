@@ -1,4 +1,5 @@
 import { json } from "https://deno.land/x/sift@0.3.2/mod.ts";
+import { parseDuration } from "./util/parseDuration.ts";
 
 const optionArrayToObject = <
   T extends { name: string; type: number; value: number | string | boolean }
@@ -25,6 +26,19 @@ export const handleSummary = ({
   )[];
 }): Response => {
   const opts = optionArrayToObject(options ?? []);
-  console.log(opts);
+
+  const duration =
+    typeof opts.period === "string" ? parseDuration(opts.period) : undefined;
+
+  const replay =
+    typeof opts.replay === "number"
+      ? opts.replay
+      : `(SELECT replayid FROM replay ORDER BY replayid DESC ${
+          duration
+            ? `WHERE playedon >= ${Date.now() / 1000 - duration}`
+            : `LIMIT 1`
+        })`;
+
+  console.log({ duration, replay });
   return json({ type: 4, data: { content: "Boo" } });
 };
