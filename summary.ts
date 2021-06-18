@@ -24,7 +24,7 @@ type Row = {
 };
 
 const parseMode = (mode: string) =>
-  /^(\d+v\d+(-(sheep|wolf))?|overall)$/.test(mode) ? mode : undefined;
+  /^((\d+v\d+|%)(-(sheep|wolf|%)|%)?|overall)$/.test(mode) ? mode : undefined;
 
 export const handleSummary = async ({
   options,
@@ -126,5 +126,5 @@ ${data
     content += "\n" + section;
   }
 
-  return json({ type: 4, data: { content } });
+  return json({ type: 4, data: { content: content.slice(0, 2000) } });
 };
