@@ -70,6 +70,8 @@ INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
 GROUP BY player
 ORDER BY 5 ASC, 2 DESC;`;
 
+  console.log(query);
+
   const result: Row[] = await fetch("https://w3x.io/sql", {
     headers: {
       "x-dbproxy-user": "elopublic",
