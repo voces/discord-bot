@@ -64,7 +64,7 @@ export const handleSummary = async ({
     COUNT(1) rounds
 FROM elo.outcome
 INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
-    mode ? `\nWHERE mode = ${mode}` : ""
+    mode ? `\nWHERE mode = '${mode}'` : ""
   }
 GROUP BY player
 ORDER BY 5 DESC, 2 DESC;`;
