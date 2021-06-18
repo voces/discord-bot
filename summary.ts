@@ -33,10 +33,18 @@ export const handleSummary = ({
   const replay =
     typeof opts.replay === "number"
       ? opts.replay
-      : `(SELECT replayid FROM elo.replay ${
-          duration ? `WHERE playedon >= ${Date.now() / 1000 - duration}` : ""
-        } ORDER BY replayid DESC ${!duration ? `LIMIT 1` : ""})`;
+      : `(SELECT replayid FROM elo.replay${
+          duration
+            ? ` WHERE playedon >= FROM_UNIXTIME(${
+                Date.now() / 1000 - duration
+              })`
+            : ""
+        }ORDER BY replayid DESC ${!duration ? ` LIMIT 1` : ""})`;
 
-  console.log({ duration, replay });
+  const query = `SELECT player, SUM(\`change\`) \`change\`, MAX(\`change\`) best, MIN(\`change\`) worst, \`mode\`, COUNT(1) rounds FROM elo.outcome WHERE replayid IN ${replay}${
+    opts.mode ? ` AND \`mode\` = ${opts.mode}` : ""
+  } GROUP BY player ORDER BY 2 DESC;`;
+
+  console.log({ duration, replay, query });
   return json({ type: 4, data: { content: "Boo" } });
 };
