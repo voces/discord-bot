@@ -24,7 +24,9 @@ type Row = {
 };
 
 const parseMode = (mode: string) =>
-  /^((\d+v\d+|%)(-(sheep|wolf|%)|%)?|overall)$/.test(mode) ? mode : undefined;
+  /^((\d+v\d+|%)(-(sheep|wolf|%)|%)?|overall|%(sheep|wolf))$/.test(mode)
+    ? mode
+    : undefined;
 
 export const handleSummary = async ({
   options,
@@ -65,7 +67,7 @@ export const handleSummary = async ({
     COUNT(1) rounds
 FROM elo.outcome
 INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
-    mode ? `\nWHERE mode = '${mode}'` : ""
+    mode ? `\nWHERE mode LIKE '${mode}'` : ""
   }
 GROUP BY player, mode
 ORDER BY 2 ASC, 3 DESC;`;
