@@ -24,7 +24,7 @@ type Row = {
 };
 
 const parseMode = (mode: string) =>
-  /^(((\d+|%)v(\d+|%)|%)(-(sheep|wolf|%)|%)?|overall|%(sheep|wolf))$/.test(mode)
+  /^(\d+v\d+|%)(-(sheep|wolf|%)|%)?|overall|%(sheep|wolf)$/.test(mode)
     ? mode
     : undefined;
 
