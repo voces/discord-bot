@@ -83,26 +83,29 @@ ORDER BY 2 ASC, 3 DESC;`;
   if (result.length === 0)
     return json({ type: 4, data: { content: "no rounds found" } });
 
-  const groups = result.reduce((groups, row) => {
-    const group = groups[row.mode] ?? (groups[row.mode] = []);
-    group.push(row);
+  const groups = Object.values(
+    result.reduce((groups, row) => {
+      const group = groups[row.mode] ?? (groups[row.mode] = []);
+      group.push(row);
 
-    return groups;
-  }, {} as Record<string, Row[]>);
+      return groups;
+    }, {} as Record<string, Row[]>)
+  );
 
-  const content = Object.values(groups)
-    .map((rows) => {
-      rows = rows.map((r) => ({ ...r, player: r.player.split("#")[0] }));
+  let content = "";
 
-      const maxNameLength = rows.reduce(
-        (max, r) => (max > r.player.length ? max : r.player.length),
-        6
-      );
+  for (const rows of groups) {
+    const data = rows.map((r) => ({ ...r, player: r.player.split("#")[0] }));
 
-      return `Changes in ${rows[0].mode}:
+    const maxNameLength = data.reduce(
+      (max, r) => (max > r.player.length ? max : r.player.length),
+      6
+    );
+
+    const section = `Changes in ${data[0].mode}:
 \`\`\`
 ${"Player".padStart(maxNameLength)} Change  Best Worst Rounds
-${rows
+${data
   .map((r) =>
     [
       r.player.padStart(maxNameLength),
@@ -114,16 +117,14 @@ ${rows
   )
   .join("\n")}
 \`\`\``;
-    })
-    .join("\n");
 
-  console.log(content.length);
+    if (content.length + section.length > 1999) {
+      content += "\n...and more!";
+      break;
+    }
 
-  return json({
-    type: 4,
-    data: {
-      content:
-        content.length > 4000 ? content.slice(0, 3994) + "```..." : content,
-    },
-  });
+    content += "\n" + section;
+  }
+
+  return json({ type: 4, data: { content } });
 };
