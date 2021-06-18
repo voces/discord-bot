@@ -122,7 +122,8 @@ ${rows
   return json({
     type: 4,
     data: {
-      content: content.length > 2000 ? content.slice(0, 1997) + "..." : content,
+      content:
+        content.length > 4000 ? content.slice(0, 3994) + "```..." : content,
     },
   });
 };
