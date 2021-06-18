@@ -70,8 +70,6 @@ INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
 GROUP BY player, mode
 ORDER BY 2 ASC, 3 DESC;`;
 
-  console.log(query);
-
   const result: Row[] = await fetch("https://w3x.io/sql", {
     headers: {
       "x-dbproxy-user": "elopublic",
@@ -93,7 +91,7 @@ ORDER BY 2 ASC, 3 DESC;`;
   }, {} as Record<string, Row[]>);
 
   const content = Object.values(groups)
-    .map((rows, i) => {
+    .map((rows) => {
       rows = rows.map((r) => ({ ...r, player: r.player.split("#")[0] }));
 
       const maxNameLength = rows.reduce(
@@ -119,5 +117,12 @@ ${rows
     })
     .join("\n");
 
-  return json({ type: 4, data: { content } });
+  console.log(content.length);
+
+  return json({
+    type: 4,
+    data: {
+      content: content.length > 2000 ? content.slice(0, 1997) + "..." : content,
+    },
+  });
 };
