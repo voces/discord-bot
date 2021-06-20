@@ -82,5 +82,5 @@ ${formatTable([
 ])}
 \`\`\``;
 
-  return content;
+  return content.slice(0, 2000);
 };
