@@ -74,7 +74,7 @@ ORDER BY outcome.mode ASC;`);
   } for ${season}:
 \`\`\`
 ${formatTable([
-  ["mode", "rating", "playedon", "replay", "round"],
+  ["Mode", "Rating", "Played on", "Replay", "Round"],
   ...results.map((r) => [
     r.mode,
     r.rating,
