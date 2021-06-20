@@ -1,10 +1,10 @@
-import { json } from "https://deno.land/x/sift@0.3.2/mod.ts";
+import { formatTable } from "../util/formatTable.ts";
 import { optionArrayToObject } from "../util/optionArrayToObject.ts";
 import { parseMode } from "../util/parseMode.ts";
 import { query } from "../util/query.ts";
 
 const parseSeason = (season: string) =>
-  /^20[1-2]\d$/.test(season) ? season : undefined;
+  /^20[1-2]\dQ[1-4]$/.test(season) ? season : undefined;
 
 export const handleMax = async ({
   options,
@@ -17,7 +17,7 @@ export const handleMax = async ({
     | { name: "season"; type: 3; value: string }
     | { name: "mode"; type: 3; value: string }
   )[];
-}): Promise<Response> => {
+}): Promise<string> => {
   const opts = optionArrayToObject(options ?? []);
   const mode = opts.mode ? parseMode(opts.mode) : "%";
   const season = opts.season ? parseSeason(opts.season) : undefined;
@@ -26,14 +26,22 @@ export const handleMax = async ({
   const monthPart = season
     ? (parseInt(season[5]) - 1) * 3 + 1
     : Math.floor(new Date().getMonth() / 3) * 3 + 1;
-  const start = new Date(`${yearPart}-${monthPart}`);
-  const end = new Date(`${yearPart}-${monthPart + 3}`);
+  const start = new Date(`${yearPart}-${monthPart}Z`);
+  const end = new Date(`${yearPart}-${monthPart + 3}Z`);
 
-  const qs = `SELECT
+  const results = await query<
+    {
+      mode: string;
+      rating: number;
+      playedon: Date;
+      replayid: number;
+      round: number;
+    }[]
+  >(`SELECT
   outcome.mode,
-  outcome.player,
   outcome.rating,
-  MAX(replayid) replayid,
+  replay.playedon,
+  MAX(outcome.replayid) replayid,
   MAX(round) round
 FROM elo.outcome
 INNER JOIN (
@@ -57,22 +65,22 @@ INNER JOIN (
   outcome.mode = q1.mode
   AND outcome.rating = q1.max
   AND outcome.player = q1.player
-GROUP BY outcome.mode, outcome.player, outcome.rating
-ORDER BY outcome.mode ASC;`;
+INNER JOIN elo.replay ON outcome.replayid = replay.replayid
+GROUP BY outcome.mode, outcome.rating
+ORDER BY outcome.mode ASC;`);
 
-  console.log(qs);
+  const content = `\`\`\`
+${formatTable([
+  ["mode", "rating", "playedon", "replay", "round"],
+  ...results.map((r) => [
+    r.mode,
+    r.rating,
+    new Date(r.playedon).toUTCString(),
+    r.replayid,
+    r.round,
+  ]),
+])}
+\`\`\``;
 
-  const results = await query<
-    {
-      mode: string;
-      player: string;
-      rating: number;
-      replayid: number;
-      round: number;
-    }[]
-  >(qs);
-
-  const content = JSON.stringify(results);
-
-  return json({ type: 4, data: { content: content.slice(0, 2000) } });
+  return content;
 };
