@@ -1,1 +1,1 @@
-deno test --watch --allow-env=SQL_PASSWORD --allow-net=w3x.io
+deno test --allow-env=SQL_PASSWORD --allow-net=w3x.io
