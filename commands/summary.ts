@@ -1,18 +1,8 @@
 import { json } from "https://deno.land/x/sift@0.3.2/mod.ts";
-import { parseDuration } from "./util/parseDuration.ts";
-
-const optionArrayToObject = <
-  T extends { name: string; type: number; value: number | string | boolean }
->(
-  options: T[]
-): { [K in T["name"]]?: T["value"] } => {
-  const optMap = {} as { [K in T["name"]]?: T["value"] };
-  for (const { name, value } of options) {
-    // deno-lint-ignore no-explicit-any
-    (optMap as any)[name] = value;
-  }
-  return optMap;
-};
+import { optionArrayToObject } from "../util/optionArrayToObject.ts";
+import { parseDuration } from "../util/parseDuration.ts";
+import { parseMode } from "../util/parseMode.ts";
+import { query } from "../util/query.ts";
 
 type Row = {
   player: string;
@@ -22,11 +12,6 @@ type Row = {
   mode: string;
   rounds: number;
 };
-
-const parseMode = (mode: string) =>
-  /^(\d+v\d+|%)(-(sheep|wolf|%)|%)?|overall|%(sheep|wolf)$/.test(mode)
-    ? mode
-    : undefined;
 
 export const handleSummary = async ({
   options,
@@ -56,31 +41,21 @@ export const handleSummary = async ({
                 Date.now() / 1000 - duration
               })`
             : ""
-        } ORDER BY replayid DESC ${!duration ? ` LIMIT 1` : ""}`;
+        } ORDER BY replayid DESC${!duration ? ` LIMIT 1` : ""}`;
 
-  const query = `SELECT
-    player,
-    mode,
-    SUM(\`change\`) \`change\`,
-    MAX(\`change\`) best,
-    MIN(\`change\`) worst,
-    COUNT(1) rounds
+  const result = await query<Row[]>(`SELECT
+  player,
+  mode,
+  SUM(\`change\`) \`change\`,
+  MAX(\`change\`) best,
+  MIN(\`change\`) worst,
+  COUNT(1) rounds
 FROM elo.outcome
 INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
     mode ? `\nWHERE mode LIKE '${mode}'` : ""
   }
 GROUP BY player, mode
-ORDER BY 2 ASC, 3 DESC;`;
-
-  const result: Row[] = await fetch("https://w3x.io/sql", {
-    headers: {
-      "x-dbproxy-user": "elopublic",
-      "x-dbproxy-password": Deno.env.get("SQL_PASSWORD")!,
-      "x-dbproxy-database": "elo",
-    },
-    method: "POST",
-    body: query,
-  }).then((r) => r.json());
+ORDER BY 2 ASC, 3 DESC;`);
 
   if (result.length === 0)
     return json({ type: 4, data: { content: "no rounds found" } });
