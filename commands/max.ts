@@ -22,7 +22,7 @@ export const handleMax = async ({
   const mode = opts.mode ? parseMode(opts.mode) : "%";
   const season =
     parseSeason(opts.season) ??
-    `${new Date().getFullYear()}Q${Math.floor(new Date().getMonth() / 3) - 1}`;
+    `${new Date().getFullYear()}Q${Math.floor(new Date().getMonth() / 3) + 1}`;
 
   const yearPart = season.slice(0, 4);
   const monthPart = (parseInt(season[5]) - 1) * 3 + 1;
