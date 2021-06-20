@@ -3,8 +3,8 @@ import { optionArrayToObject } from "../util/optionArrayToObject.ts";
 import { parseMode } from "../util/parseMode.ts";
 import { query } from "../util/query.ts";
 
-const parseSeason = (season: string) =>
-  /^20[1-2]\dQ[1-4]$/.test(season) ? season : undefined;
+const parseSeason = (season: string | undefined) =>
+  season ? (/^20[1-2]\dQ[1-4]$/.test(season) ? season : undefined) : undefined;
 
 export const handleMax = async ({
   options,
@@ -20,12 +20,12 @@ export const handleMax = async ({
 }): Promise<string> => {
   const opts = optionArrayToObject(options ?? []);
   const mode = opts.mode ? parseMode(opts.mode) : "%";
-  const season = opts.season ? parseSeason(opts.season) : undefined;
+  const season =
+    parseSeason(opts.season) ??
+    `${new Date().getFullYear()}Q${Math.floor(new Date().getMonth() / 3) - 1}`;
 
-  const yearPart = season ? season.slice(0, 4) : new Date().getFullYear();
-  const monthPart = season
-    ? (parseInt(season[5]) - 1) * 3 + 1
-    : Math.floor(new Date().getMonth() / 3) * 3 + 1;
+  const yearPart = season.slice(0, 4);
+  const monthPart = (parseInt(season[5]) - 1) * 3 + 1;
   const start = new Date(`${yearPart}-${monthPart}Z`);
   const end = new Date(`${yearPart}-${monthPart + 3}Z`);
 
@@ -69,7 +69,10 @@ INNER JOIN elo.replay ON outcome.replayid = replay.replayid
 GROUP BY outcome.mode, outcome.rating
 ORDER BY outcome.mode ASC;`);
 
-  const content = `\`\`\`
+  const content = `Your max rating${
+    results.length > 1 ? "s" : ""
+  } for ${season}:
+\`\`\`
 ${formatTable([
   ["mode", "rating", "playedon", "replay", "round"],
   ...results.map((r) => [

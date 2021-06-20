@@ -15,7 +15,8 @@ Deno.test("works", async () => {
         },
       ],
     }),
-    `\`\`\`
+    `Your max ratings for 2021Q1:
+\`\`\`
 mode       rating playedon   replay round
 2v4       1113.95 2021-03-27 102487    16
 2v4-sheep 1098.52 2021-03-29 102991    20
