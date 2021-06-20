@@ -75,7 +75,7 @@ ${formatTable([
   ...results.map((r) => [
     r.mode,
     r.rating,
-    new Date(r.playedon).toUTCString(),
+    new Date(r.playedon).toISOString().slice(0, 10),
     r.replayid,
     r.round,
   ]),
