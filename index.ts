@@ -27,12 +27,14 @@ const handler = async (request: Request): Promise<Response> => {
   const { valid, body } = await verifySignature(request);
   if (!valid) return json({ error: "Invalid request" }, { status: 401 });
 
-  const { type = 0, data = { options: [] } } = JSON.parse(body);
+  const { type = 0, data = { options: [] }, member, user } = JSON.parse(body);
   if (type === PING) return json({ type: PONG });
+
+  const userId = user?.id ?? member?.user?.id;
 
   if (type === INTERACTION) {
     if (data.id in interactionsMap)
-      return interactionsMap[data.id as string](data);
+      return interactionsMap[data.id as string]({ ...data, userId });
 
     return json({ type: 4, data: { content: "Unhandled interaction" } });
   }
