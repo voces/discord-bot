@@ -8,9 +8,8 @@ const wrappedHandler =
   ): ((data: T) => Promise<Response> | Response) =>
   async (data: T) => {
     const ret = await handler(data);
-    console.log(ret);
     if (ret instanceof Response) return ret;
-    return json({ type: 4, data: ret });
+    return json({ type: 4, data: { content: ret } });
   };
 
 export const interactionsMap: Record<
