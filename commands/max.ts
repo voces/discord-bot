@@ -8,16 +8,16 @@ const parseSeason = (season: string) =>
 
 export const handleMax = async ({
   options,
-  ...rest
+  userId,
 }: {
   id: "856232133118132254";
   name: "max";
+  userId: string;
   options?: (
     | { name: "season"; type: 3; value: string }
     | { name: "mode"; type: 3; value: string }
   )[];
 }): Promise<Response> => {
-  console.log(rest);
   const opts = optionArrayToObject(options ?? []);
   const mode = opts.mode ? parseMode(opts.mode) : undefined;
   const season = opts.season ? parseSeason(opts.season) : undefined;
@@ -29,15 +29,7 @@ export const handleMax = async ({
   const start = new Date(`${yearPart}-${monthPart}`);
   const end = new Date(`${yearPart}-${monthPart + 3}`);
 
-  const results = await query<
-    {
-      mode: string;
-      player: string;
-      rating: number;
-      replayid: number;
-      round: number;
-    }[]
-  >(`SELECT
+  const qs = `SELECT
   outcome.mode,
   outcome.player,
   outcome.rating,
@@ -57,7 +49,7 @@ INNER JOIN (
       AND player = (
           SELECT battlenettag
           FROM elo.discordBattleNetMap
-          WHERE discordId = '232319397287559169'
+          WHERE discordId = '${userId}'
       )
       AND mode LIKE '${mode}'
   GROUP BY mode, player
@@ -66,7 +58,19 @@ INNER JOIN (
   AND outcome.rating = q1.max
   AND outcome.player = q1.player
 GROUP BY outcome.mode, outcome.player, outcome.rating
-ORDER BY outcome.mode ASC;`);
+ORDER BY outcome.mode ASC;`;
+
+  console.log(qs);
+
+  const results = await query<
+    {
+      mode: string;
+      player: string;
+      rating: number;
+      replayid: number;
+      round: number;
+    }[]
+  >(qs);
 
   const content = JSON.stringify(results);
 
