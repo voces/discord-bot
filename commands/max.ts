@@ -19,7 +19,7 @@ export const handleMax = async ({
   )[];
 }): Promise<Response> => {
   const opts = optionArrayToObject(options ?? []);
-  const mode = opts.mode ? parseMode(opts.mode) : undefined;
+  const mode = opts.mode ? parseMode(opts.mode) : "%";
   const season = opts.season ? parseSeason(opts.season) : undefined;
 
   const yearPart = season ? season.slice(0, 4) : new Date().getFullYear();
