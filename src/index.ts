@@ -27,8 +27,8 @@ const handler = async (request: Request): Promise<Response> => {
   const userId = user?.id ?? member?.user?.id;
 
   if (type === INTERACTION) {
-    if (data.id in interactionsMap)
-      return interactionsMap[data.id as string]({ ...data, userId });
+    if (data.name in interactionsMap)
+      return interactionsMap[data.name as string]({ ...data, userId });
 
     return json({ type: 4, data: { content: "Unhandled interaction" } });
   }

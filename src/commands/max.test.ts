@@ -1,10 +1,9 @@
-import { assertEquals } from "https://deno.land/std@0.99.0/testing/asserts.ts";
+import { assertEquals } from "../deps.ts";
 import { handleMax } from "./max.ts";
 
 Deno.test("works", async () => {
   assertEquals(
     await handleMax({
-      id: "856232133118132254",
       name: "max",
       userId: "287706612456751104",
       options: [
@@ -27,6 +26,6 @@ Mode       Rating Played on  Replay Round
 5v5       1020.06 2021-02-28  95894     0
 5v5-sheep 1023.25 2021-02-28  95894     0
 overall      1116 2021-03-27 102487    16
-\`\`\``
+\`\`\``,
   );
 });

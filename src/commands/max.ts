@@ -1,17 +1,13 @@
 import { formatTable } from "../util/formatTable.ts";
 import { optionArrayToObject } from "../util/optionArrayToObject.ts";
 import { parseMode } from "../util/parseMode.ts";
+import { parseSeason } from "../util/parseSeason.ts";
 import { query } from "../util/query.ts";
-
-const parseSeason = (season: string | undefined) =>
-  season ? (/^20[1-2]\dQ[1-4]$/.test(season) ? season : undefined) : undefined;
 
 export const handleMax = async ({
   options,
   userId,
 }: {
-  id: "856232133118132254";
-  name: "max";
   userId: string;
   options?: (
     | { name: "season"; type: 3; value: string }
@@ -20,8 +16,7 @@ export const handleMax = async ({
 }): Promise<string> => {
   const opts = optionArrayToObject(options ?? []);
   const mode = opts.mode ? parseMode(opts.mode) : "%";
-  const season =
-    parseSeason(opts.season) ??
+  const season = parseSeason(opts.season) ??
     `${new Date().getFullYear()}Q${Math.floor(new Date().getMonth() / 3) + 1}`;
 
   const yearPart = season.slice(0, 4);
@@ -73,16 +68,18 @@ ORDER BY outcome.mode ASC;`);
     results.length > 1 ? "s" : ""
   } for ${season}:
 \`\`\`
-${formatTable([
-  ["Mode", "Rating", "Played on", "Replay", "Round"],
-  ...results.map((r) => [
-    r.mode,
-    r.rating,
-    new Date(r.playedon).toISOString().slice(0, 10),
-    r.replayid,
-    r.round,
-  ]),
-])}
+${
+    formatTable([
+      ["Mode", "Rating", "Played on", "Replay", "Round"],
+      ...results.map((r) => [
+        r.mode,
+        r.rating,
+        new Date(r.playedon).toISOString().slice(0, 10),
+        r.replayid,
+        r.round,
+      ]),
+    ])
+  }
 \`\`\``;
 
   return content.slice(0, 2000);
