@@ -16,6 +16,7 @@ const hash = Array(40)
   .map(() => charset[Math.floor(Math.random() * charset.length)])
   .join("");
 for await (const file of expandGlob("src/**/*.ts")) {
+  if (file.path.endsWith(".test.ts")) continue;
   uploads.push(
     Deno.readTextFile(file.path).then(async (body) => {
       const date = new Date();
@@ -34,25 +35,36 @@ for await (const file of expandGlob("src/**/*.ts")) {
 }
 await Promise.all(uploads);
 
-// A wait so files sync through deno deploy
-console.log("Waiting 15 seconds...");
-await new Promise((resolve) => setTimeout(resolve, 15_000));
+const start = Date.now();
 
-// Perform the deploy
-const res = await fetch(
-  // live-lobbies-dev.deno.dev
-  "https://dash.deno.com/api/projects/0254d1b4-df87-4bf6-b4e5-ccce2ccc4bec/deployments",
-  {
-    method: "POST",
-    headers: {
-      Authorization: "Bearer " + Deno.env.get("DENO_DEPLOY_TOKEN"),
-      "Content-Type": "application/json",
+// A wait so files sync through deno deploy
+console.log("Waiting 5 seconds...");
+await new Promise((resolve) => setTimeout(resolve, 5_000));
+
+while (start + 60_000 > Date.now()) {
+  // Perform the deploy
+  const res = await fetch(
+    // live-lobbies-dev.deno.dev
+    "https://dash.deno.com/api/projects/0254d1b4-df87-4bf6-b4e5-ccce2ccc4bec/deployments",
+    {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer " + Deno.env.get("DENO_DEPLOY_TOKEN"),
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        url: `https://ephemeral.deno.dev/${hash}/src/index.ts`,
+        production: true,
+      }),
     },
-    body: JSON.stringify({
-      url: `https://ephemeral.deno.dev/${hash}/src/index.ts`,
-      production: true,
-    }),
-  },
-).then((r) => r.json());
-if (res.code === "deploymentFailed") console.log(res.message);
-else console.log(res.domainMappings[0].domain);
+  ).then((r) => r.json());
+
+  if (res.code === "deploymentFailed") {
+    console.log(res.message);
+    console.log("retrying in 1 second...");
+    await new Promise((resolve) => setTimeout(resolve, 1_000));
+  } else {
+    console.log(res.domainMappings[0].domain);
+    break;
+  }
+}

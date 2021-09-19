@@ -4,7 +4,6 @@ import { handleMax } from "./max.ts";
 Deno.test("works", async () => {
   assertEquals(
     await handleMax({
-      name: "max",
       userId: "287706612456751104",
       options: [
         {

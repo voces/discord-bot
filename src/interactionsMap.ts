@@ -1,5 +1,6 @@
 import { json } from "https://deno.land/x/sift@0.3.2/mod.ts";
 import { handleMax } from "./commands/max.ts";
+import { handleRounds } from "./commands/rounds.ts";
 import { handleSummary } from "./commands/summary.ts";
 import { handleTop } from "./commands/top.ts";
 
@@ -27,4 +28,5 @@ export const interactionsMap: Record<
   summary: handleSummary,
   max: handleMax,
   top: handleTop,
+  rounds: handleRounds,
 });

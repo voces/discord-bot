@@ -1,5 +1,6 @@
 export const formatTable = <T extends { toString: () => string }[][]>(
-  table: T
+  table: T,
+  formats?: { number?: (value: number) => string },
 ) => {
   const stringRows: string[][] = [];
   const columnWidths = table[0].map(() => 0);
@@ -10,7 +11,9 @@ export const formatTable = <T extends { toString: () => string }[][]>(
     stringRows.push(stringRow);
     for (let i = 0; i < row.length; i++) {
       const cell = row[i];
-      const str = cell.toString();
+      const str = typeof cell === "number" && formats?.number
+        ? formats.number(cell)
+        : cell.toString();
       stringRow.push(str);
       if (columnWidths[i] < str.length) columnWidths[i] = str.length;
     }
