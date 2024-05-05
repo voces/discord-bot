@@ -5,7 +5,7 @@
     "test": "deno test --allow-all"
   },
   "imports": {
-    "@std/dotenv": "jsr:@std/dotenv@^0.224.0",
+    "@std/dotenv/load": "jsr:@std/dotenv@^0.224.0/load",
     "@std/http": "jsr:@std/http@^0.224.0",
     "expect": "https://deno.land/x/expect@v0.4.0/mod.ts",
     "sqlstring": "https://esm.sh/sqlstring@2.3.3"

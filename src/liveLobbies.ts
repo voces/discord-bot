@@ -1,4 +1,3 @@
-import "@std/dotenv/load";
 import { Lobby, wc3stats } from "./sources/wc3stats.ts";
 import { Alert, db, Rule } from "./sources/kv.ts";
 import { discord } from "./sources/discord.ts";
