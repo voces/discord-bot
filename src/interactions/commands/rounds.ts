@@ -1,9 +1,11 @@
+import { z } from "npm:zod";
 import { cleanUsername } from "../util/cleanUsername.ts";
-import { formatList } from "../util/formatList.ts";
-import { formatTable } from "../util/formatTable.ts";
-import { formatTime } from "../util/formatTime.ts";
+import { formatList } from "../util/format/formatList.ts";
+import { formatTable } from "../util/format/formatTable.ts";
+import { formatTime } from "../util/format/formatTime.ts";
 import { optionArrayToObject } from "../util/optionArrayToObject.ts";
-import { query } from "../util/query.ts";
+import { sql } from "../../sources/query.ts";
+import { InternalHandler } from "../types.ts";
 
 const verboseResponse = (
   grouped: Record<
@@ -139,35 +141,34 @@ export const compactResponse = (
 \`\`\``;
 };
 
-export const handleRounds = async ({
-  options,
-  userId,
-}: {
-  userId: string;
-  options?: (
-    | { name: "replay"; type: 4; value: number }
-    | { name: "compact"; type: 5; value: boolean }
-    | { name: "color"; type: 3; value: "self" | "sheep" }
-  )[];
-}): Promise<string> => {
-  const opts = optionArrayToObject(options ?? []);
+const zRoundsOptions = z.object({
+  replay: z.number().optional(),
+  compact: z.boolean().optional(),
+  color: z.string().optional(),
+});
+
+export const handleRounds: InternalHandler = async (
+  { userId, ...input },
+): Promise<string> => {
+  const options = "options" in input ? input.options : [];
+  const opts = zRoundsOptions.parse(optionArrayToObject(options ?? []));
   const compact = opts.compact ?? false;
   const color = opts.color ?? "self";
-  const q =
-    `SELECT battlenettag FROM elo.discordBattleNetMap WHERE discordId = '${userId}';`;
-  const prows = query<{ battlenettag: string }[]>(
-    q,
-  );
+  const prows = sql<
+    { battlenettag: string }[]
+  >`SELECT battlenettag FROM elo.discordBattleNetMap WHERE discordId = ${userId};`;
   const rows = await prows;
   const self = color === "self"
     ? await prows.then((d) => d[0]?.battlenettag)
     : undefined;
-  const replay: number = opts.replay ?? await query<{ replayid: number }[]>(
-    "SELECT replayid FROM elo.replay ORDER BY replayid DESC LIMIT 1;",
-  ).then((d) => d[0].replayid);
-  console.log({ color, self, userId, q, rows });
+  const replay: number = opts.replay ??
+    await sql<
+      { replayid: number }[]
+    >`SELECT replayid FROM elo.replay ORDER BY replayid DESC LIMIT 1;`
+      .then((d) => d[0].replayid);
+  console.log({ color, self, userId, rows });
 
-  const data = await query<
+  const data = await sql<
     {
       round: number;
       mode: string;
@@ -175,13 +176,11 @@ export const handleRounds = async ({
       change: number;
       duration: number;
     }[]
-  >(
-    `SELECT round.round, \`mode\`, player, \`change\`, duration
+  >`SELECT round.round, \`mode\`, player, \`change\`, duration
 		FROM elo.outcome
 		INNER JOIN elo.round ON outcome.replayid = round.replayid
 			AND outcome.round = round.round
-		WHERE outcome.replayid = ${replay};`,
-  );
+		WHERE outcome.replayid = ${replay};`;
 
   if (!data.length) {
     return "No round founds.";

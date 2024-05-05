@@ -1,9 +1,9 @@
-import { json } from "https://deno.land/x/sift@0.3.2/mod.ts";
 import { cleanUsername } from "../util/cleanUsername.ts";
 import { optionArrayToObject } from "../util/optionArrayToObject.ts";
-import { parseDuration } from "../util/parseDuration.ts";
-import { parseMode } from "../util/parseMode.ts";
-import { query } from "../util/query.ts";
+import { parseDuration } from "../util/parse/parseDuration.ts";
+import { parseMode } from "../util/parse/parseMode.ts";
+import { sql } from "../../sources/query.ts";
+import { InternalHandler } from "../types.ts";
 
 type Row = {
   player: string;
@@ -14,15 +14,10 @@ type Row = {
   rounds: number;
 };
 
-export const handleSummary = async ({
-  options,
-}: {
-  options?: (
-    | { name: "replay"; type: 4; value: number }
-    | { name: "period"; type: 3; value: string }
-    | { name: "mode"; type: 3; value: string }
-  )[];
-}): Promise<Response> => {
+export const handleSummary: InternalHandler = async (
+  input,
+): Promise<string> => {
+  const options = "options" in input ? input.options : [];
   const opts = optionArrayToObject(options ?? []);
 
   let duration = typeof opts.period === "string"
@@ -40,23 +35,23 @@ export const handleSummary = async ({
         : ""
     } ORDER BY replayid DESC${!duration ? ` LIMIT 1` : ""}`;
 
-  const result = await query<Row[]>(`SELECT
-  player,
-  mode,
-  SUM(\`change\`) \`change\`,
-  MAX(\`change\`) best,
-  MIN(\`change\`) worst,
-  COUNT(1) rounds
-FROM elo.outcome
-INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
-    mode ? `\nWHERE mode LIKE '${mode}'` : ""
+  const result = await sql<Row[]>`
+    SELECT
+      player,
+      mode,
+      SUM(\`change\`) \`change\`,
+      MAX(\`change\`) best,
+      MIN(\`change\`) worst,
+      COUNT(1) rounds
+    FROM elo.outcome
+    INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
+    mode ? `\nWHERE mode LIKE ${mode}` : ""
   }
-GROUP BY player, mode
-ORDER BY 2 ASC, 3 DESC;`);
+    GROUP BY player, mode
+    ORDER BY 2 ASC, 3 DESC;
+  `;
 
-  if (result.length === 0) {
-    return json({ type: 4, data: { content: "no rounds found" } });
-  }
+  if (result.length === 0) return "no rounds found";
 
   const groups = Object.values(
     result.reduce((groups, row) => {
@@ -103,5 +98,5 @@ ${
     content += "\n" + section;
   }
 
-  return json({ type: 4, data: { content: content.slice(0, 2000) } });
+  return content.slice(0, 2000);
 };

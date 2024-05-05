@@ -13,4 +13,4 @@ jobs:
     - name: Run tests
       env:
         SQL_PASSWORD: ${{ secrets.SQL_PASSWORD }}
-      run: ./test
+      run: deno task test

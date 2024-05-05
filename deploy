@@ -1,1 +1,0 @@
-deno run --no-check --allow-read --allow-net --allow-env --unstable scripts/deploy.ts

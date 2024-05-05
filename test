@@ -1,1 +1,0 @@
-deno test --allow-env=SQL_PASSWORD --allow-net=w3x.io
