@@ -17,6 +17,7 @@ type Row = {
 export const handleSummary: InternalHandler = async (
   input,
 ): Promise<string> => {
+  if (input.guildId) return "Only available via DM";
   const options = "options" in input ? input.options : [];
   const opts = optionArrayToObject(options ?? []);
 

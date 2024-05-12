@@ -1,12 +1,16 @@
-import { db } from "../../sources/kv.ts";
+import { deleteAlert } from "../../sources/w3xio.ts";
 import { InternalHandler } from "../types.ts";
 
 export const handleStop: InternalHandler = async (
   { channelId, channelName },
 ) => {
-  const prev = await db.alerts.find(channelId);
-  if (!prev) return "No alert found";
-  await db.alerts.delete(channelId);
+  const result = await deleteAlert(channelId);
+
+  if ("errors" in result) {
+    if (result.errors[0].code === "missing_alert") return "No alert found";
+    return "Error deleting alert";
+  }
+
   console.log(new Date(), "Removed alert", { channelId, channelName });
   return "Deleted alert";
 };

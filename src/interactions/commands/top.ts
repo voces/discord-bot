@@ -13,6 +13,7 @@ const zTopOptions = z.object({
 });
 
 export const handleTop: InternalHandler = async (input): Promise<string> => {
+  if (input.guildId) return "Only available via DM";
   const options = "options" in input ? input.options : [];
   const opts = zTopOptions.parse(optionArrayToObject(options ?? []));
   const mode = opts.mode ? parseMode(opts.mode) : "2v4";

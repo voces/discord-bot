@@ -8,6 +8,7 @@ export type AllowedInput = APIApplicationCommandInteraction["data"] & {
   userId: string;
   channelId: string;
   channelName: string | undefined;
+  guildId: string | undefined;
 };
 
 type AllowedReturn =

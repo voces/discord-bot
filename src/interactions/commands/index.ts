@@ -9,6 +9,7 @@ import { handleSummary } from "./summary.ts";
 import { handleTop } from "./top.ts";
 import { handleStop } from "./stop.ts";
 import { AllowedInput, ExternalHandler, InternalHandler } from "../types.ts";
+import "../../sources/w3xio.ts";
 
 const wrappedHandler = (
   handler: InternalHandler,
@@ -66,6 +67,7 @@ export const handleApplicationCommand = async (
     userId,
     channelId: interaction.channel.id,
     channelName: interaction.channel.name ?? interaction.user?.username,
+    guildId: interaction.guild_id,
   });
   console.log(new Date(), interaction.data.name, response);
   return Response.json(response);

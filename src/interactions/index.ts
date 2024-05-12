@@ -4,7 +4,7 @@ import type { APIInteraction } from "npm:discord-api-types/v10";
 import { InteractionType } from "npm:discord-api-types/v10";
 import { InteractionResponseType } from "npm:discord-api-types/v10";
 import { handleApplicationCommand } from "./commands/index.ts";
-import { handleModalSubmit } from "./modals.ts";
+// import { handleModalSubmit } from "./modals.ts";
 
 Deno.serve(async (request: Request) => {
   const validationError = validateRequest(request, {
@@ -28,9 +28,9 @@ Deno.serve(async (request: Request) => {
     return handleApplicationCommand(interaction);
   }
 
-  if (interaction.type === InteractionType.ModalSubmit) {
-    return handleModalSubmit(interaction);
-  }
+  // if (interaction.type === InteractionType.ModalSubmit) {
+  //   return handleModalSubmit(interaction);
+  // }
 
   return Response.json({
     type: InteractionResponseType.ChannelMessageWithSource,

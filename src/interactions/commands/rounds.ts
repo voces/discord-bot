@@ -150,6 +150,7 @@ const zRoundsOptions = z.object({
 export const handleRounds: InternalHandler = async (
   { userId, ...input },
 ): Promise<string> => {
+  if (input.guildId) return "Only available via DM";
   const options = "options" in input ? input.options : [];
   const opts = zRoundsOptions.parse(optionArrayToObject(options ?? []));
   const compact = opts.compact ?? false;

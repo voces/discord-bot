@@ -1,10 +1,12 @@
 import {
+  AllowedMentionsTypes,
   APIInteractionResponse,
   APIModalSubmitInteraction,
   InteractionResponseType,
 } from "npm:discord-api-types/v10";
-import { z } from "npm:zod";
+import { string, z } from "npm:zod";
 import { db, RuleKey } from "../sources/kv.ts";
+import { discord } from "../sources/discord.ts";
 
 const zSubmitProps = z.object({
   message: z.string().optional().transform((v) => v ? v : undefined),
@@ -13,6 +15,44 @@ const zSubmitProps = z.object({
   name: z.string().optional().transform((v) => v ? v : undefined),
   server: z.string().optional().transform((v) => v ? v : undefined),
 });
+
+const enrichMessage = async (
+  message: string | undefined,
+  guildId: string | undefined,
+) => {
+  if (!message) return;
+  const mentions = Array.from(
+    new Set(
+      Array.from(message.matchAll(/@\w+/g)).map((m) => m[0].slice(1)),
+    ),
+  )
+    .filter((m) => m !== "everyone" && m !== "here");
+  if (!mentions.length) return message;
+
+  const roles = guildId ? await discord.guilds.getRoles(guildId) : [];
+
+  for (const mention of mentions) {
+    const role = roles.find((r) => r.name === mention);
+    if (role) {
+      message = message.replace(
+        new RegExp(`@${mention}`, "g"),
+        `<@&${role.id}>`,
+      );
+      continue;
+    }
+  }
+
+  return message;
+};
+
+const formatAsString = (value: string | RegExp) => {
+  if (typeof value !== "string") return `\`${value}\``;
+  if (value.includes('"')) {
+    if (value.includes("'")) return `\`${value}\``;
+    return `'${value}'`;
+  }
+  return `"${value}"`;
+};
 
 export const handleModalSubmit = async (
   interaction: APIModalSubmitInteraction,
@@ -53,13 +93,15 @@ export const handleModalSubmit = async (
     });
   }
 
+  const previous = await db.alerts.find(interaction.channel.id);
+
   await db.alerts.set(interaction.channel.id, {
     channel: interaction.channel.id,
-    message: values.message,
+    message: await enrichMessage(values.message, interaction.guild_id),
     rule: rules.length > 1 ? { type: "and", rules } : rules[0],
-  });
+  }, { overwrite: true });
 
-  console.log("Created alert", {
+  console.log(`${previous ? "Edited" : "Created"} alert`, {
     channelId: interaction.channel.id,
     channelName: interaction.channel.name,
     userId: interaction.user?.id,
@@ -70,9 +112,16 @@ export const handleModalSubmit = async (
     {
       type: InteractionResponseType.ChannelMessageWithSource,
       data: {
-        content: `Created alert with filters ${
-          ruleValues.map(([k, v]) => `\`${k}=${v}\``).join(" ")
-        }${values.message ? ` and \`message=${values.message}\`` : ""}`,
+        content: `${previous ? "Edited" : "Created"} alert ${
+          previous ? "to" : "with"
+        } filter${rules.length > 1 ? "s" : ""} ${
+          rules.map((r) => `${r.key} ${formatAsString(r.value)}`).join(" ")
+        }${
+          values.message ? ` and message ${formatAsString(values.message)}` : ""
+        }`,
+        allowed_mentions: {
+          parse: [AllowedMentionsTypes.Role, AllowedMentionsTypes.Everyone],
+        },
       },
     } satisfies APIInteractionResponse,
   );

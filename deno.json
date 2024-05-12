@@ -2,10 +2,12 @@
   "tasks": {
     "dev": "deno run --allow-all --unstable-cron --unstable-kv --watch src/index.ts",
     "deploy": "deployctl deploy --prod",
-    "test": "deno test --allow-all"
+    "deploy-prod": "deployctl deploy --prod --project=live-lobbies",
+    "test": "deno test --allow-all",
+    "fetch-schema": "deno run -A scripts/fetchSchema.ts"
   },
   "imports": {
-    "@std/dotenv/load": "jsr:@std/dotenv@^0.224.0/load",
+    "@std/dotenv": "jsr:@std/dotenv@^0.224.0",
     "@std/http": "jsr:@std/http@^0.224.0",
     "expect": "https://deno.land/x/expect@v0.4.0/mod.ts",
     "sqlstring": "https://esm.sh/sqlstring@2.3.3"

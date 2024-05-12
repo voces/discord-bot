@@ -14,6 +14,7 @@ const zMaxOptions = z.object({
 export const handleMax: InternalHandler = async (
   { userId, ...input },
 ): Promise<string> => {
+  if (input.guildId) return "Only available via DM";
   const options = "options" in input ? input.options : [];
   const opts = zMaxOptions.parse(optionArrayToObject(options ?? []));
 
