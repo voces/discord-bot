@@ -1,15 +1,17 @@
 import { z } from "npm:zod";
 
+export const zAlertKey = z.union([
+  z.literal("map"),
+  z.literal("host"),
+  z.literal("name"),
+  z.literal("server"),
+]);
+
 const zAlert = z.object({
   channelId: z.string(),
   message: z.string().optional(),
   rules: z.object({
-    key: z.union([
-      z.literal("map"),
-      z.literal("host"),
-      z.literal("name"),
-      z.literal("server"),
-    ]),
+    key: zAlertKey,
     value: z.string(),
   }).array(),
 });
