@@ -45,13 +45,18 @@ const enrichMessage = async (
   return message;
 };
 
-const formatAsString = (value: string | RegExp) => {
-  if (typeof value !== "string") return `\`${value}\``;
-  if (value.includes('"')) {
-    if (value.includes("'")) return `\`${value}\``;
-    return `'${value}'`;
+const escape = (value: string) => value.replace(/(\*|_|`|~|\\)/g, "\\$1");
+
+const formatAsString = (value: string) => {
+  const [, pattern, flags] = value.match(/^\/(.*)\/(\w*)$/) ?? [];
+  if (pattern) {
+    return `\`${new RegExp(pattern, flags).toString().replace(/`/g, "\\$1")}\``;
   }
-  return `"${value}"`;
+  if (value.includes('"')) {
+    if (value.includes("'")) return `\`${escape(value)}\``;
+    return `'${escape(value)}'`;
+  }
+  return `"${escape(value)}"`;
 };
 
 export const handleModalSubmit = async (

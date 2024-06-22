@@ -2,7 +2,7 @@ import { cleanUsername } from "../util/cleanUsername.ts";
 import { optionArrayToObject } from "../util/optionArrayToObject.ts";
 import { parseDuration } from "../util/parse/parseDuration.ts";
 import { parseMode } from "../util/parse/parseMode.ts";
-import { sql } from "../../sources/query.ts";
+import { format, raw, sql } from "../../sources/query.ts";
 import { InternalHandler } from "../types.ts";
 
 type Row = {
@@ -29,12 +29,16 @@ export const handleSummary: InternalHandler = async (
   const mode = typeof opts.mode === "string" ? parseMode(opts.mode) : undefined;
 
   const replay = typeof opts.replay === "number"
-    ? `SELECT ${opts.replay} replayid`
-    : `SELECT replayid FROM elo.replay${
-      duration
-        ? ` WHERE playedon >= FROM_UNIXTIME(${Date.now() / 1000 - duration})`
-        : ""
-    } ORDER BY replayid DESC${!duration ? ` LIMIT 1` : ""}`;
+    ? format`SELECT ${opts.replay} replayid`
+    : format`SELECT replayid FROM elo.replay${
+      raw(
+        duration
+          ? format` WHERE playedon >= FROM_UNIXTIME(${
+            Date.now() / 1000 - duration
+          })`
+          : "",
+      )
+    } ORDER BY replayid DESC${raw(!duration ? ` LIMIT 1` : "")}`;
 
   const result = await sql<Row[]>`
     SELECT
@@ -45,8 +49,8 @@ export const handleSummary: InternalHandler = async (
       MIN(\`change\`) worst,
       COUNT(1) rounds
     FROM elo.outcome
-    INNER JOIN (${replay}) AS q1 ON outcome.replayid = q1.replayid${
-    mode ? `\nWHERE mode LIKE ${mode}` : ""
+    INNER JOIN (${raw(replay)}) AS q1 ON outcome.replayid = q1.replayid${
+    raw(mode ? format`\nWHERE mode LIKE ${mode}` : "")
   }
     GROUP BY player, mode
     ORDER BY 2 ASC, 3 DESC;
