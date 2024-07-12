@@ -1,6 +1,7 @@
 import {
   ComponentType,
   InteractionResponseType,
+  PermissionFlagsBits,
   TextInputStyle,
 } from "npm:discord-api-types/v10";
 import { InternalHandler } from "../types.ts";
@@ -36,9 +37,18 @@ const derichMessage = async (
 };
 
 export const handleAlert: InternalHandler = async ({ channelId, guildId }) => {
-  const current = await getAlert(channelId).then((r) =>
-    "channelId" in r ? r : undefined
-  );
+  const [current, guild] = await Promise.all([
+    await getAlert(channelId).then((r) => "channelId" in r ? r : undefined),
+    guildId ? discord.guilds.get(guildId) : Promise.resolve(undefined),
+  ]);
+
+  if (
+    guild &&
+    (!guild.permissions ||
+      BigInt(guild.permissions) & PermissionFlagsBits.SendMessages)
+  ) {
+    return "I do not have permission to send messages in this channel.";
+  }
 
   return {
     type: InteractionResponseType.Modal,
