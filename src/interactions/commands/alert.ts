@@ -1,11 +1,12 @@
 import {
+  APIRole,
   ComponentType,
   InteractionResponseType,
   PermissionFlagsBits,
   TextInputStyle,
 } from "npm:discord-api-types/v10";
 import { InternalHandler } from "../types.ts";
-import { discord } from "../../sources/discord.ts";
+import { discord, hasPermission } from "../../sources/discord.ts";
 import { getAlert } from "../../sources/w3xio.ts";
 
 const derichMessage = async (
@@ -20,7 +21,9 @@ const derichMessage = async (
   );
   if (!mentions.length) return message;
 
-  const roles = guildId ? await discord.guilds.getRoles(guildId) : [];
+  const roles = guildId
+    ? await discord.guilds.getRoles(guildId) as APIRole[]
+    : [];
 
   for (const mention of mentions) {
     const role = roles.find((r) => r.id === mention);
@@ -37,16 +40,18 @@ const derichMessage = async (
 };
 
 export const handleAlert: InternalHandler = async ({ channelId, guildId }) => {
-  const [current, guild] = await Promise.all([
+  const [current, allowed] = await Promise.all([
     await getAlert(channelId).then((r) => "channelId" in r ? r : undefined),
-    guildId ? discord.guilds.get(guildId) : Promise.resolve(undefined),
+    guildId
+      ? hasPermission({
+        channelId,
+        guildId,
+        permission: PermissionFlagsBits.SendMessages,
+      })
+      : true,
   ]);
 
-  if (
-    guild &&
-    (!guild.permissions ||
-      BigInt(guild.permissions) & PermissionFlagsBits.SendMessages)
-  ) {
+  if (!allowed) {
     return "I do not have permission to send messages in this channel.";
   }
 
