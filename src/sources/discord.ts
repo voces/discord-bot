@@ -59,16 +59,26 @@ export const hasPermission = async (
     "permission_overwrites" in channel &&
     Array.isArray(channel.permission_overwrites)
   ) {
-    for (const overwrite of channel.permission_overwrites) {
-      if (
-        overwrite.id !== guildId &&
-        !(overwrite.type === OverwriteType.Member &&
-          overwrite.id === userId) &&
-        !(overwrite.type === OverwriteType.Role &&
-          member.roles.includes(overwrite.id))
-      ) continue;
-      permissions &= ~BigInt(overwrite.deny);
-      permissions |= BigInt(overwrite.allow);
+    const overwrites = channel
+      .permission_overwrites.reduce((overwrites, overwrite) => {
+        if (overwrite.id === guildId) {
+          overwrites[0].allow |= BigInt(overwrite.allow);
+          overwrites[0].deny |= BigInt(overwrite.deny);
+        } else if (member.roles.includes(overwrite.id)) {
+          overwrites[1].allow |= BigInt(overwrite.allow);
+          overwrites[1].deny |= BigInt(overwrite.deny);
+        } else if (overwrite.id === userId) {
+          overwrites[2].allow |= BigInt(overwrite.allow);
+          overwrites[2].deny |= BigInt(overwrite.deny);
+        }
+        return overwrites;
+      }, [{ allow: 0n, deny: 0n }, { allow: 0n, deny: 0n }, {
+        allow: 0n,
+        deny: 0n,
+      }]);
+    for (const overwrite of overwrites) {
+      permissions &= ~overwrite.deny;
+      permissions |= overwrite.allow;
     }
   }
   return (permissions & permission) === permission;

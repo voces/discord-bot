@@ -51,7 +51,7 @@ export const handleAlert: InternalHandler = async ({ channelId, guildId }) => {
       : true,
   ]);
 
-  if (!allowed) {
+  if (!allowed && !current) {
     return "I do not have permission to send messages in this channel.";
   }
 
