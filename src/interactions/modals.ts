@@ -23,7 +23,12 @@ const enrichMessage = async (
   if (!message) return;
   const mentions = Array.from(
     new Set(
-      Array.from(message.matchAll(/@\w+/g)).map((m) => m[0].slice(1)),
+      Array.from(message.matchAll(/@\w+(?: \w+)*/g)).flatMap((m) =>
+        m[0].split(" ").map((_, i, words) =>
+          words.slice(0, i + 1).join(" ").slice(1)
+        )
+          .reverse()
+      ),
     ),
   )
     .filter((m) => m !== "everyone" && m !== "here");
