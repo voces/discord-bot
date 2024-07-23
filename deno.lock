@@ -2,20 +2,11 @@
   "version": "3",
   "packages": {
     "specifiers": {
-      "jsr:@std/dotenv@^0.224.0": "jsr:@std/dotenv@0.224.0",
-      "jsr:@std/http@^0.224.0": "jsr:@std/http@0.224.0",
       "npm:@discordjs/core": "npm:@discordjs/core@1.2.0",
       "npm:@discordjs/rest": "npm:@discordjs/rest@2.3.0",
+      "npm:@types/node": "npm:@types/node@18.16.19",
       "npm:discord-api-types": "npm:discord-api-types@0.37.83",
       "npm:zod": "npm:zod@3.23.6"
-    },
-    "jsr": {
-      "@std/dotenv@0.224.0": {
-        "integrity": "d9234cdf551507dcda60abb6c474289843741d8c07ee8ce540c60f5c1b220a1d"
-      },
-      "@std/http@0.224.0": {
-        "integrity": "fde48c9133d1d7bb94c134d8f0f01c1a737e6e3879f52580e9ca92217a011e82"
-      }
     },
     "npm": {
       "@discordjs/collection@2.1.0": {
@@ -113,16 +104,14 @@
       }
     }
   },
+  "redirects": {
+    "https://esm.sh/sqlstring": "https://esm.sh/sqlstring@2.3.3",
+    "https://esm.sh/v135/@types/sqlstring@~2.3/index.d.ts": "https://esm.sh/v135/@types/sqlstring@2.3.2/index.d.ts"
+  },
   "remote": {
     "https://cdn.skypack.dev/-/tweetnacl@v1.0.3-G4yM3nQ8lnXXlGGQADqJ/dist=es2019,mode=imports/optimized/tweetnacl.js": "d26554516df57e5cb58954e90c633c8871b4e66016b9fe4e07a36db5430bc8c7",
     "https://cdn.skypack.dev/tweetnacl@v1.0.3?dts": "6610aad2ac175c2d575995fc7de8ed552c2e5e05aef80ed8588cf3c6e2db61d7",
     "https://esm.sh/sqlstring@2.3.3": "9df76462c2eea3d1a8c53247dcdaab6d0853f69e53b0b0beed7e9c5477e5404f",
     "https://esm.sh/v135/sqlstring@2.3.3/denonext/sqlstring.mjs": "ba7d79f3c8a740f5356de31912f90c4fb9ebb18d3a3a2831141aa826e4b14592"
-  },
-  "workspace": {
-    "dependencies": [
-      "jsr:@std/dotenv@^0.224.0",
-      "jsr:@std/http@^0.224.0"
-    ]
   }
 }

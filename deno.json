@@ -7,8 +7,7 @@
     "fetch-schema": "deno run -A scripts/fetchSchema.ts"
   },
   "imports": {
-    "expect": "https://deno.land/x/expect@v0.4.0/mod.ts",
-    "sqlstring": "https://esm.sh/sqlstring@2.3.3"
+    "expect": "https://deno.land/x/expect@v0.4.0/mod.ts"
   },
   "deploy": {
     "project": "0254d1b4-df87-4bf6-b4e5-ccce2ccc4bec",
