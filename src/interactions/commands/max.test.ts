@@ -10,6 +10,7 @@ Deno.test("works", async () => {
       name: "max",
       userId: "287706612456751104",
       channelId: "123121223122",
+      guildId: undefined,
       channelName: "Foobar",
       options: [
         {
