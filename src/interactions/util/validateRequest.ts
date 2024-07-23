@@ -1,4 +1,4 @@
-import { STATUS_CODE } from "@std/http/status";
+import { STATUS_CODE } from "jsr:@std/http/status";
 
 export const validateRequest = (
   request: Request,
