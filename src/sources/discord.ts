@@ -20,7 +20,7 @@ discord.applicationCommands.createGlobalCommand(
   {
     type: ApplicationCommandType.ChatInput,
     name: "alert",
-    description: "Configuration alerts for when a lobby is hosted",
+    description: "Enable alerts for hosted Warcraft 3 lobbies",
   },
 ).catch(console.error);
 
@@ -29,7 +29,7 @@ discord.applicationCommands.createGlobalCommand(
   {
     type: ApplicationCommandType.ChatInput,
     name: "stop",
-    description: "Stops the current alert",
+    description: "Stop Warcraft alerts",
   },
 ).catch(console.error);
 
