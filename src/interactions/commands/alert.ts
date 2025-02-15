@@ -46,13 +46,14 @@ export const handleAlert: InternalHandler = async ({ channelId, guildId }) => {
       ? hasPermission({
         channelId,
         guildId,
-        permission: PermissionFlagsBits.SendMessages,
+        permission: PermissionFlagsBits.SendMessages |
+          PermissionFlagsBits.EmbedLinks,
       })
       : true,
   ]);
 
   if (!allowed && !current) {
-    return "I do not have permission to send messages in this channel.";
+    return "I do not have permission to send messages or embed links in this channel.";
   }
 
   return {
