@@ -5,7 +5,6 @@ import {
   APIGuildMember,
   APIRole,
   ApplicationCommandType,
-  OverwriteType,
 } from "npm:discord-api-types/v10";
 
 const id = Deno.env.get("BOT_ID") ?? "536245741182648360";
@@ -42,12 +41,17 @@ export const hasPermission = async (
   },
 ) => {
   const [channel, member, roles] = await Promise.all([
-    discord.channels.get(channelId) as Promise<APIChannel>,
-    discord.guilds.getMember(guildId, userId) as Promise<
-      APIGuildMember
+    discord.channels.get(channelId).catch(() => undefined) as Promise<
+      APIChannel | undefined
     >,
-    discord.guilds.getRoles(guildId) as Promise<APIRole[]>,
+    discord.guilds.getMember(guildId, userId).catch(() => undefined) as Promise<
+      APIGuildMember | undefined
+    >,
+    discord.guilds.getRoles(guildId).catch(() => undefined) as Promise<
+      APIRole[] | undefined
+    >,
   ]);
+  if (!channel || !member || !roles) return false;
 
   let permissions = roles.filter((r) =>
     r.id === guildId || r.id in member.roles

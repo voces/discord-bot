@@ -96,9 +96,11 @@ export const handleModalSubmit = async (
     });
   }
 
+  const message = await enrichMessage(values.message, interaction.guild_id);
+
   const { action } = await upsertAlert({
     channelId: interaction.channel.id,
-    message: await enrichMessage(values.message, interaction.guild_id),
+    message,
     rules,
   });
 
@@ -117,9 +119,7 @@ export const handleModalSubmit = async (
           action === "updated" ? "to" : "with"
         } filter${rules.length > 1 ? "s" : ""} ${
           rules.map((r) => `${r.key} ${formatAsString(r.value)}`).join(" ")
-        }${
-          values.message ? ` and message ${formatAsString(values.message)}` : ""
-        }`,
+        }${message ? ` and message ${formatAsString(message)}` : ""}`,
         allowed_mentions: {
           parse: [AllowedMentionsTypes.Role, AllowedMentionsTypes.Everyone],
         },

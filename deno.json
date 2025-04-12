@@ -2,7 +2,7 @@
   "tasks": {
     "dev": "deno run --allow-all --unstable-cron --unstable-kv --watch src/index.ts",
     "deploy": "deployctl deploy --prod",
-    "deploy-prod": "deployctl deploy --prod --project=live-lobbies",
+    "deploy-prod": "deployctl deploy --prod --project=live-lobbies src/index.ts",
     "test": "deno test --allow-all",
     "fetch-schema": "deno run -A scripts/fetchSchema.ts"
   },
