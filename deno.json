@@ -11,6 +11,10 @@
   },
   "deploy": {
     "project": "0254d1b4-df87-4bf6-b4e5-ccce2ccc4bec",
+    "exclude": [
+      "**/node_modules"
+    ],
+    "include": [],
     "entrypoint": "src/index.ts"
   }
 }

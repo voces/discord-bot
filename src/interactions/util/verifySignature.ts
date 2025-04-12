@@ -1,4 +1,4 @@
-import nacl from "https://cdn.skypack.dev/tweetnacl@v1.0.3?dts";
+import nacl from "npm:tweetnacl";
 
 const hexToUint8Array = (hex: string) =>
   new Uint8Array(hex.match(/.{1,2}/g)!.map((val) => parseInt(val, 16)));

@@ -1,4 +1,4 @@
-import SqlString from "https://esm.sh/sqlstring@2.3.3";
+import SqlString from "npm:sqlstring";
 
 const query = <T = unknown>(query: string): Promise<T> =>
   fetch("https://w3x.io/sql", {
